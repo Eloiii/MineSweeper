@@ -27,9 +27,15 @@ body {
 }
 
 .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   width: 60px;
+  font-family: 'Inter var', sans-serif;
+  font-variation-settings: 'wght' 900;
   height: 60px;
+  font-size: 2vw;
   padding: 0.1vw;
   margin: 0.2vw;
   background-color: #E5E5E5;
