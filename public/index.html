@@ -1,16 +1,30 @@
 <html>
 
 <head>
-  <title>DEMINEUR DE FOU</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
+    <title>DEMINEUR DE FOU</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
-  <h1>DEMINE MOI ÇA LÀ</h1>
-  <div class="container">
+<h1>DEMINE MOI ÇA LÀ</h1>
+<div class="container">
+    <div class="option">
+        <div class="form__group field">
+            <input type="input" class="form__field" placeholder="Lignes" name="rows" id="rows" required/>
+            <label for="rows" class="form__label">Lignes</label>
+        </div>
+        <div class="form__group field">
+            <input type="input" class="form__field" placeholder="Colonnes" name="cols" id="cols" required/>
+            <label for="cols" class="form__label">Colonnes</label>
+        </div>
+        <div class="form__group field">
+            <input type="input" class="form__field" placeholder="Bombes" name="bombs" id="bombs" required/>
+            <label for="bombs" class="form__label">Bombes</label>
+        </div>
+    </div>
     <div class="grid">
 
     </div>
-  </div>
+</div>
 </body>
 <script src="/javascripts/index.js"></script>
 </html>
