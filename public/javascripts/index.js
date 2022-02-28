@@ -2,7 +2,6 @@ const ROW = 10
 const COL = ROW
 const BOMBS = (10 / 100) * (ROW * COL)
 const BOMB = "BOMB"
-const UNKNOWN = "UNKNOWN"
 let gameOver = false
 
 const gridOBJ = document.querySelector(".grid");
@@ -11,7 +10,7 @@ let grid = new Array(ROW);
 
 initGrid()
 console.log(grid)
-initCSS()
+drawCSS()
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -45,9 +44,9 @@ function setBombs(bombs) {
         grid[row] = new Array(COL)
         for (let col = 0; col < COL; col++) {
             if (isABomb(row, col, bombs))
-                grid[row][col] = BOMB
+                grid[row][col] = {val: BOMB, revealed: false}
             else
-                grid[row][col] = UNKNOWN
+                grid[row][col] = {val: 0, revealed: false}
         }
     }
 }
@@ -65,21 +64,21 @@ function getDistance(row, col, rowBomb, colBomb) {
     return Math.round(Math.sqrt(2) * diagonalSteps + straightSteps)
 }
 
-function getDistanceFromClosestBomb(row, col, bombs) {
-    let closest = Number.MAX_SAFE_INTEGER
-    for (const bomb of bombs) {
-        let distance = getDistance(row, col, bomb.row, bomb.col)
-        if(distance < closest)
-            closest = distance
-    }
-    return closest
+function getDistanceFromBomb(row, col, bomb) {
+    return getDistance(row, col, bomb.row, bomb.col)
 }
 
 function setNumbers(bombs) {
+    let distance;
     for (let row = 0; row < ROW; row++) {
         for (let col = 0; col < COL; col++) {
-            if(grid[row][col] !== BOMB) {
-                grid[row][col] = getDistanceFromClosestBomb(row, col, bombs)
+            if(!isBomb(row,col)) {
+                for (let bomb of bombs) {
+                    distance = getDistanceFromBomb(row, col, bomb)
+                    if(distance === 1) {
+                        grid[row][col].val += 1
+                    }
+                }
             }
         }
     }
@@ -91,7 +90,11 @@ function initGrid() {
     setNumbers(bombs)
 }
 
-function initCSS() {
+function isRevealed(row, col) {
+    return grid[row][col].revealed
+}
+
+function drawCSS() {
     clearGrid()
     for (let row = 0; row < ROW; row++) {
         let DIVRow = document.createElement("div")
@@ -99,9 +102,12 @@ function initCSS() {
         DIVRow.style.display = "flex";
         for (let col = 0; col < COL; col++) {
             let DIVCell = document.createElement("div")
-            // DIVCell.textContent = grid[row][col] === BOMB ? "💣" : grid[row][col]
-            DIVCell.className = "cell"
-            DIVCell.addEventListener("click", revealCell)
+            if(isRevealed(row, col)) {
+                DIVCell.textContent = grid[row][col].val === BOMB ? "💣" : (grid[row][col].val === 0 ? "" : grid[row][col].val)
+                DIVCell.classList.add("revealed")
+            }
+            DIVCell.classList.add("cell")
+            DIVCell.addEventListener("click", clickEVT)
             DIVCell.param = {row: row, col: col}
             DIVRow.appendChild(DIVCell)
         }
@@ -116,12 +122,39 @@ function clearGrid() {
     }
 }
 
-function revealCell(evt) {
+function getNeighbours(row, col) {
+    let res = []
+    if(row !== 0)
+        res.push({row:row - 1, col: col})
+    if(row !== ROW - 1)
+        res.push({row:row + 1, col: col})
+    if(col !== 0)
+        res.push({row:row, col: col - 1})
+    if(col !== COL - 1)
+        res.push({row:row, col: col + 1})
+    return res
+}
+
+function isBomb(row, col) {
+    return grid[row][col].val === BOMB
+}
+
+function revealCell(row, col) {
+    grid[row][col].revealed = true
+    if(isBomb(row, col)) {
+        alert("perdu connard")
+    } else if(grid[row][col].val === 0) {
+        const neighbours = getNeighbours(row, col)
+        for (let neighbour of neighbours) {
+            if (!isBomb(neighbour.row, neighbour.col) && !isRevealed(neighbour.row, neighbour.col))
+                revealCell(neighbour.row, neighbour.col)
+        }
+    }
+    drawCSS()
+}
+
+function clickEVT(evt) {
     const row = evt.currentTarget.param.row
     const col = evt.currentTarget.param.col
-    if(grid[row][col] === BOMB) {
-        evt.currentTarget.textContent = "💣"
-    } else {
-        evt.currentTarget.textContent = grid[row][col]
-    }
+    revealCell(row, col)
 }
