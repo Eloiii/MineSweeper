@@ -1,16 +1,51 @@
-const ROW = 10
-const COL = ROW
-const BOMBS = (10 / 100) * (ROW * COL)
+let ROW = 10
+let COL = ROW
+let BOMBS = (10 / 100) * (ROW * COL)
 const BOMB = "BOMB"
 let gameOver = false
 
-const gridOBJ = document.querySelector(".grid");
+const gridOBJ = document.querySelector(".grid")
+const rowOBJ = document.getElementById("rows")
+const colOBJ = document.getElementById("cols")
+const bombsOBJ = document.getElementById("bombs")
+
+rowOBJ.value = ""
+colOBJ.value = ""
+bombsOBJ.value = ""
+
+rowOBJ.addEventListener("input", (e) =>{
+    const rows = Number(e.target.value)
+    if(!isNaN(rows) && rows > 0 && rows < 20) {
+        ROW = rows
+        initGame()
+    }
+})
+
+colOBJ.addEventListener("input", (e) =>{
+    const cols = Number(e.target.value)
+    if(!isNaN(cols) && cols > 0 && cols < 20) {
+        COL = cols
+        initGame()
+    }
+})
+
+bombsOBJ.addEventListener("input", (e) =>{
+    const bombs = Number(e.target.value)
+    if(!isNaN(bombs) && bombs > 0 && bombs <= ROW * COL) {
+        BOMBS = bombs
+        initGame()
+    }
+})
+
+
 let grid = new Array(ROW);
 
+initGame()
 
-initGrid()
-console.log(grid)
-drawCSS()
+function initGame() {
+    initGrid()
+    drawCSS()
+}
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -39,14 +74,18 @@ function isABomb(row, col, bombs) {
     return false
 }
 
+function hasFlag(row, col) {
+    return grid[row][col].flag
+}
+
 function setBombs(bombs) {
     for (let row = 0; row < ROW; row++) {
         grid[row] = new Array(COL)
         for (let col = 0; col < COL; col++) {
             if (isABomb(row, col, bombs))
-                grid[row][col] = {val: BOMB, revealed: false}
+                grid[row][col] = {val: BOMB, revealed: false, flag: false}
             else
-                grid[row][col] = {val: 0, revealed: false}
+                grid[row][col] = {val: 0, revealed: false, flag: false}
         }
     }
 }
@@ -94,6 +133,14 @@ function isRevealed(row, col) {
     return grid[row][col].revealed
 }
 
+function putFlag(evt) {
+    evt.preventDefault()
+    const row = evt.currentTarget.param.row
+    const col = evt.currentTarget.param.col
+    grid[row][col].flag = !hasFlag(row, col);
+    drawCSS()
+}
+
 function drawCSS() {
     clearGrid()
     for (let row = 0; row < ROW; row++) {
@@ -106,8 +153,12 @@ function drawCSS() {
                 DIVCell.textContent = grid[row][col].val === BOMB ? "💣" : (grid[row][col].val === 0 ? "" : grid[row][col].val)
                 DIVCell.classList.add("revealed")
             }
+            if(hasFlag(row, col) && !isRevealed(row,col)) {
+                DIVCell.textContent = "🚩"
+            }
             DIVCell.classList.add("cell")
             DIVCell.addEventListener("click", clickEVT)
+            DIVCell.addEventListener("contextmenu", putFlag)
             DIVCell.param = {row: row, col: col}
             DIVRow.appendChild(DIVCell)
         }
@@ -140,9 +191,11 @@ function isBomb(row, col) {
 }
 
 function revealCell(row, col) {
+    if(hasFlag(row,col))
+        return
     grid[row][col].revealed = true
     if(isBomb(row, col)) {
-        alert("perdu connard")
+        // alert("perdu connard")
     } else if(grid[row][col].val === 0) {
         const neighbours = getNeighbours(row, col)
         for (let neighbour of neighbours) {
